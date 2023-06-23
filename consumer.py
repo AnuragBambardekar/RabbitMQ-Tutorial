@@ -1,5 +1,8 @@
 import pika
 
+def on_message_received(ch, method, properties, body):
+    print(f"Received new message: {body}")
+
 connection_parameters = pika.ConnectionParameters('localhost')
 
 # create a connection
@@ -11,13 +14,7 @@ channel = connection.channel()
 # declare a queue
 channel.queue_declare(queue='letterbox')
 
-# publish message to queue via default exchange
-message = 'hello world'
+channel.basic_consume(queue='letterbox', auto_ack=True, on_message_callback=on_message_received)
 
-# send it
-channel.basic_publish(exchange='', routing_key='letterbox', body=message)
-
-print(f"Sent message: {message}")
-
-# close the connection
-connection.close()
+print("Started consuming messages...")
+channel.start_consuming()
