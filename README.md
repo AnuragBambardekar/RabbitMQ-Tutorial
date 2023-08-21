@@ -96,7 +96,7 @@ docker run -d --hostname rmq --name rabbit-server -p 8080:15672 -p 5672:5672 rab
 You can access the RabbitMQ management UI in your web browser at http://localhost:8080/. Log in with the default credentials (username: guest, password: guest).
 
 ## Folder Contents
-1. A simple Producer-Consumer/Publisher-Subscriber model
+1. <u>**A simple Producer-Consumer/Publisher-Subscriber model**</u>
 
 Demonstrates a simple example of using the RabbitMQ message broker with Python, where you have a publisher that sends messages to a queue and a consumer that receives and processes those messages. RabbitMQ is a message broker that allows different parts of your application to communicate by sending and receiving messages.
 
@@ -106,7 +106,7 @@ The publisher code is responsible for sending messages to a RabbitMQ queue. It b
 **Consumer Code:**
 The consumer code is designed to receive and process messages from the same RabbitMQ 'letterbox' queue that the publisher uses. Similar to the publisher, it imports the 'pika' library and establishes a connection to the RabbitMQ server. A channel is created and associated with the 'letterbox' queue, which is declared if it doesn't already exist. The consumer sets up a callback function called 'on_message_received' to handle incoming messages, in this case, printing the received message. It then starts consuming messages from the queue using 'channel.start_consuming()'. The program will stay active and responsive to incoming messages, invoking the 'on_message_received' function each time a new message arrives.
 
-2. Competing Consumers and a Producer
+2. <u>**Competing Consumers and a Producer**</u>
 
 Simulating asynchronous message processing with a RabbitMQ consumer and a publisher.
 
@@ -131,7 +131,7 @@ Here, round-robin strategy fails! because Consumer B's consumption of messages w
 Two Competing Consumers and One Producer:
 ![Two Consumers and One producer](2_competing_consumers/multiple_consumers.png)
 
-3. Publisher-Subscriber
+3. <u>**Publisher-Subscriber**</u>
 
 Demonstration of a publish-subscribe messaging pattern using the RabbitMQ message broker. In this pattern, there is a producer that sends messages to an exchange, and there are two consumers that receive messages from the same exchange. The exchange acts as a broadcaster, distributing messages to all bound queues (consumers) without knowing about them individually.
 
@@ -140,3 +140,52 @@ Demonstration of a publish-subscribe messaging pattern using the RabbitMQ messag
 - We don't want to send messages directly to every service that's interested.
 
 ![Fanout Exchange in Pub-Sub](images/PXL_20230821_173945240.jpg)
+
+4. <u>**Routing**</u>
+
+#### Drawbacks of Fanout Exchange
+- Fanout exchanges deliver the message to all bound queues without any filtering or routing logic. This is a drawback when you need more fine-grained control over message routing based on message content or other criteria. For example, if you want to selectively route messages to different consumers based on their content, a fanout exchange might not be the best choice.
+
+- Fanout exchanges consume resources (CPU and memory) since they need to keep track of all the queues to which they need to broadcast messages. In situations with a large number of queues, this can lead to increased resource usage.
+
+- Because fanout exchanges send the same message to multiple queues, you might encounter message duplication issues if you have multiple consumers reading from different queues. Handling duplicate messages can be challenging.
+
+#### Remedies:
+
+Queues are bound to TOPIC exchanges with the routing key. This is a pattern matching process which is used to make decisions around routing messages. It does this by checking if a message’s Routing Key matches the desired pattern.
+
+A Routing Key is made up of words separated by dots.
+
+The Binding Key for Topic Exchanges is similar to a Routing Key, however there are two special characters, namely the asterisk * and hash #. These are wildcards, allowing us to create a binding in a smarter way. An asterisk * matches any single word and a hash # matches zero or more words.
+
+**Routing using the Direct Exchange:**
+![Direct Exchange](images/image.png)
+
+Unlike a fanout exchange, which broadcasts messages to all bound queues, a direct exchange routes messages to specific queues based on a routing key. This routing key is specified by the sender when publishing a message, and queues are bound to the direct exchange with routing keys that indicate which messages they are interested in receiving.
+
+Direct exchanges enable selective message routing based on routing keys. Messages are only delivered to queues that have explicitly expressed interest in messages with matching routing keys.
+
+**Routing using the Topic Exchange:**
+![Topic Exchange](images/image-1.png)
+
+It is designed to provide more flexible and powerful message routing compared to direct and fanout exchanges. A topic exchange uses a routing key, like a direct exchange, but it also introduces wildcard characters to allow for more advanced pattern-based routing.
+
+Consumers can subscribe to specific types of messages by using routing key patterns that match their interests, allowing for selective message consumption.
+
+`*` (asterisk) matches a single word in the routing key. For example, a routing key of "stock.usd" would match a pattern of "stock.*".
+
+For example, if you have a routing key of "stock.usd" and a binding with a pattern of "stock.*," the message will match because the asterisk matches "usd," a single word.
+
+However, if you have a routing key like "stock.usd.market" and a binding with a pattern of "stock.*," it will not match because the asterisk only matches a single word. In this case, you would need to use the hash (#) to match one or more words.
+
+`#` (hash) matches one or more words in the routing key. For example, a routing key of "stock.usd.market" would match a pattern of "stock.#".
+
+For example, if you have a routing key like "stock.usd.market" and a binding with a pattern of "stock.#," the message will match because the hash matches "usd.market," which is one or more words.
+
+The hash is more flexible than the asterisk because it can match multiple words, allowing for more extensive pattern-based routing.
+
+![Hash '#' usage](images/image-2.png)
+
+# References
+
+- https://www.youtube.com/playlist?list=PLalrWAGybpB-UHbRDhFsBgXJM1g6T4IvO - jumpstartCS tutorial on RabbitMQ
