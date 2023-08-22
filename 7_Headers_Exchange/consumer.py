@@ -12,7 +12,7 @@ connection = pika.BlockingConnection(connection_parameters)
 # create a default channel
 channel = connection.channel()
 
-# declare the second exchange
+# declare the headers exchange
 channel.exchange_declare(exchange='headersExchange', exchange_type=ExchangeType.headers)
 
 # declare a queue
