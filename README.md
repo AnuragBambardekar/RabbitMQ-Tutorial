@@ -205,6 +205,93 @@ When the server sends the reply, it includes the same correlation_id that was in
 
 The client, using the consumer on its reply queue, receives and processes the response message, and the result is printed.
 
+6. <u>**Exchange To Exchange Routing**</u>
+
+Exchanges can not only be bound to Queues, but they can also be bound to other Exchanges. Exchange-to-Exchange (E2E) routing, also known as Exchange Federation, is a powerful routing pattern in RabbitMQ that allows messages to be forwarded or routed between exchanges. This pattern is useful when you have multiple exchanges in your RabbitMQ setup, and you want to define complex routing logic by forwarding messages from one exchange to another based on certain criteria.
+
+![Exchange to Exchange Routing](images/image-4.png)
+
+![RabbitMQ panel displaying Exchange-Exchange strategy](image.png)
+
+<u>Example:</u>
+
+Suppose you have three exchanges: **exchangeA, exchangeB, and exchangeC**. You can set up E2E routing as follows:
+
+Bind **exchangeA** to **exchangeB** with a specific routing key.
+Bind **exchangeA** to **exchangeC** with a different routing key.
+When messages are published to **exchangeA** with routing keys matching the bindings, they will be routed to both **exchangeB** and **exchangeC**.
+This allows you to split and forward messages based on specific criteria, and each destination exchange (**exchangeB** and **exchangeC**) can have its own set of queues and consumers for further processing.
+
+6. <u>**The Headers Exchange**</u>
+
+Headers Exchange is a type of exchange that uses message header attributes, rather than routing keys, for message routing. Messages are routed to queues based on header attribute matching criteria defined in bindings between the exchange and queues. This exchange type is particularly useful when you need to route messages based on header attribute values, and it provides a high degree of flexibility in message routing.
+
+![Headers Exchange](images/image-5.png)
+
+<u>**x-match:any**</u>
+
+If you declare a binding with *x-match:any*, it means that if any of the header attributes in the binding matches any of the header attributes in the message, the message will be routed to the associated queue.
+
+For example, if you have a binding with *x-match:any* and criteria {header1: 'value1', header2: 'value2'}, then a message with either header1: 'value1' or header2: 'value2' (or both) will match and be routed to the queue.
+
+<u>**x-match:all**</u>
+
+If you declare a binding with *x-match:all*, it means that all of the header attributes in the binding must match their corresponding header attributes in the message for the message to be routed to the associated queue.
+
+For example, if you have a binding with *x-match:all* and criteria {header1: 'value1', header2: 'value2'}, then a message must have both header1: 'value1' and header2: 'value2' to match and be routed.
+
+**Note**: Make sure to unbind *`any`* arguments from the queue if you will be sending *`all`* arguments in the header next.
+
+7. <u>**The Consistent Hashing Exchange**</u>
+
+RabbitMQ has 4 default exchange types:
+- Direct
+- FanOut
+- Topic
+- Headers
+
+Consistent hashing is a technique used in distributed systems to distribute data or workload across multiple nodes in a way that minimizes the reshuffling of data when nodes are added or removed from the system. It's commonly used in scenarios like distributed caching, distributed databases, and load balancing.
+
+In consistent hashing, a hash function is used to map data or requests to a range of values (often a circle or ring) and then map each node in the system to a position on the same circle. Data or requests are assigned to the nearest node in a clockwise direction.
+
+While RabbitMQ doesn't have a built-in "Consistent Hashing Exchange," you can implement consistent hashing as part of your application's logic when using RabbitMQ for specific use cases. Instead, it's a concept often associated with distributed systems and load balancing, and it can be implemented using custom logic and plugins in RabbitMQ.
+
+![Consistent Hashing Exchange](images/image-6.png)
+Weighted consistent hashing
+
+In this case, I've decided to give service #2 twice as much hashing space as the other two services. This means that service #2 will be responsible for handling a larger portion of the hashed values in the ring compared to the other two services.
+
+Service #A and Service #C: Each of these services is assigned an equal portion of the hash space on the ring, which is typically 1/3 of the total space since you have three services.
+
+Service #B: This service is assigned a larger portion of the hash space, specifically 2/3 of the total space since it has twice the hashing space as the other two services.
+
+If you add another service to your system while using weighted consistent hashing, you'll need to update the hashing strategy to accommodate the new service's allocation of the hash space. This computation should take into account the desired weight of the new service and any changes to the weights of existing services.
+
+#### To Enable the plugin:
+
+- Go to Docker Desktop
+- Run the following commands:
+```cmd
+# ls
+bin  boot  devetc  home  liblib32  lib64  libx32  media  mnt  opt  pluginsproc  root  run  sbin  srv  sys  tmp  usr  var
+# cd sbin
+# rabbitmq-plugins enable rabbitmq_consistent_hash_exchange
+Enabling plugins on node rabbit@rmq:
+rabbitmq_consistent_hash_exchange
+The following plugins have been configured:
+  rabbitmq_consistent_hash_exchange
+  rabbitmq_management
+  rabbitmq_management_agent
+  rabbitmq_prometheus
+  rabbitmq_web_dispatch
+Applying plugin configuration to rabbit@rmq...
+The following plugins have been enabled:
+  rabbitmq_consistent_hash_exchange
+
+started 1 plugins.
+# 
+```
+
 # References
 
 - https://www.youtube.com/playlist?list=PLalrWAGybpB-UHbRDhFsBgXJM1g6T4IvO - jumpstartCS tutorial on RabbitMQ
