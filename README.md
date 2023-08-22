@@ -186,6 +186,13 @@ The hash is more flexible than the asterisk because it can match multiple words,
 
 ![Hash '#' usage](images/image-2.png)
 
+5. <u>**Request-Response Pattern**</u>
+
+![Request-Reply diagram](images/image-3.png)
+
+The request-response pattern in RabbitMQ, often referred to as RPC (Remote Procedure Call), is a communication pattern where one application (the client) sends a request to another application (the server) and waits for a response.
+
+
 # References
 
 - https://www.youtube.com/playlist?list=PLalrWAGybpB-UHbRDhFsBgXJM1g6T4IvO - jumpstartCS tutorial on RabbitMQ
