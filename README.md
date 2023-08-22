@@ -211,7 +211,7 @@ Exchanges can not only be bound to Queues, but they can also be bound to other E
 
 ![Exchange to Exchange Routing](images/image-4.png)
 
-![RabbitMQ panel displaying Exchange-Exchange strategy](image.png)
+![RabbitMQ panel displaying Exchange-Exchange strategy](images/image-7.png)
 
 <u>Example:</u>
 
@@ -291,6 +291,47 @@ The following plugins have been enabled:
 started 1 plugins.
 # 
 ```
+
+## Publishing Options
+
+ContentType - application/json, application/pdf <br>
+    - It specifies the MIME type of the message content. This helps consumers understand how to interpret the message payload.
+
+ContentEncoding - gzip, compress, deflate <br>
+    - It specifies the encoding of the message content if it's not in its original form. This is typically used when the message body is compressed.
+
+Timestamp - 1640030010 <br>
+    - It specifies when the message was created. This can be helpful for tracking and auditing purposes.
+
+DeliveryMode - 0,1 <br>
+    -  it specifies whether a message should be persisted to disk or not. It can have one of two values:
+
+0 (Non-Persistent): If you set the deliveryMode to 1, it indicates that the message should be treated as non-persistent. In this case, RabbitMQ will keep the message in memory and will not write it to disk. Non-persistent messages are faster to publish and consume but are not guaranteed to survive server restarts or crashes. They may be lost if RabbitMQ restarts or fails.
+
+1 (Persistent): When you set the deliveryMode to 2, it indicates that the message should be treated as persistent. RabbitMQ will make sure that the message is written to disk before acknowledging receipt. Persistent messages are slower to publish and consume because of the disk I/O but are guaranteed to survive server restarts or crashes. They are a good choice for important data that must not be lost.
+
+Expiration - 90061 <br>
+    - allows you to specify a time limit for how long a message should be considered valid and retained by the RabbitMQ broker. Once a message's expiration time has passed, RabbitMQ will discard the message, and it will not be delivered to consumers, even if it hasn't been consumed yet.
+
+## Speed vs Resiliency Tradeoffs
+
+![Speed vs Resiliency Tradeoffs](images/image-8.png)
+
+Speed: If you prioritize speed, you can publish messages without confirmations, with non-persistent delivery (deliveryMode 0), and without using transactions. This allows for quick message publication but sacrifices some level of resiliency.
+
+Resiliency: To prioritize resiliency, you can enable features like publisher confirms, use mandatory messages to prevent message loss, use transactions to ensure atomicity, and publish messages with persistence (deliveryMode 1). These features ensure that messages are reliably delivered and persisted, but they come at the cost of slower publishing due to acknowledgment and disk I/O operations.
+
+---
+
+No Confirmations: When you publish a message without using publisher confirms, the publishing process is relatively fast, as there's no need for acknowledgments from the broker. However, this approach lacks resiliency because you have no assurance that the message was successfully received and stored by RabbitMQ. If a network issue or broker problem occurs, messages might be lost.
+
+Mandatory Messages: Mandatory messages are published with the expectation that they must be routed to at least one queue. If no queue can accept the message, it is returned to the publisher. This can improve resiliency by ensuring that messages are not silently dropped, but it may slow down publishing slightly due to the need for routing checks.
+
+Publisher Confirms: Publisher confirms are a resiliency feature that allows the publisher to receive acknowledgments from RabbitMQ once a message has been successfully enqueued by the broker. While this improves resiliency by providing confirmation of message receipt, it adds a level of latency to the publishing process because the publisher must wait for acknowledgments.
+
+Transactions: Transactions provide a strong guarantee of message durability and consistency. With transactions, messages are published within a transaction context, and they are only considered published if the transaction is committed successfully. This ensures that messages are either fully delivered or not delivered at all. However, transactions are relatively slow compared to non-transactional publishing because they involve additional processing and synchronization.
+
+Persisted Messages: Persisted messages are those with a deliveryMode of 1, which means they are stored on disk by RabbitMQ. This is a crucial feature for resiliency because it guarantees that messages will survive broker restarts and crashes. However, writing messages to disk incurs I/O overhead, making publishing slower compared to non-persistent messages (deliveryMode 0).
 
 # References
 
