@@ -106,7 +106,7 @@ The publisher code is responsible for sending messages to a RabbitMQ queue. It b
 **Consumer Code:**
 The consumer code is designed to receive and process messages from the same RabbitMQ 'letterbox' queue that the publisher uses. Similar to the publisher, it imports the 'pika' library and establishes a connection to the RabbitMQ server. A channel is created and associated with the 'letterbox' queue, which is declared if it doesn't already exist. The consumer sets up a callback function called 'on_message_received' to handle incoming messages, in this case, printing the received message. It then starts consuming messages from the queue using 'channel.start_consuming()'. The program will stay active and responsive to incoming messages, invoking the 'on_message_received' function each time a new message arrives.
 
-2. <u>**Competing Consumers and a Producer**</u>
+2. <u>**Competing Consumers and a Producer - Work Queues**</u>
 
 Simulating asynchronous message processing with a RabbitMQ consumer and a publisher.
 
@@ -186,7 +186,7 @@ The hash is more flexible than the asterisk because it can match multiple words,
 
 ![Hash '#' usage](images/image-2.png)
 
-5. <u>**Request-Response Pattern**</u>
+5. <u>**Request-Response Pattern - Remote Procedure Call or RPC**</u>
 
 ![Request-Reply diagram](images/image-3.png)
 
