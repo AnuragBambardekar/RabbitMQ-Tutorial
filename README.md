@@ -333,6 +333,95 @@ Transactions: Transactions provide a strong guarantee of message durability and 
 
 Persisted Messages: Persisted messages are those with a deliveryMode of 1, which means they are stored on disk by RabbitMQ. This is a crucial feature for resiliency because it guarantees that messages will survive broker restarts and crashes. However, writing messages to disk incurs I/O overhead, making publishing slower compared to non-persistent messages (deliveryMode 0).
 
+## Alternate Exchanges
+
+An alternate exchange, often referred to as an "AE," is a feature in RabbitMQ that allows you to define an exchange to which messages are sent if they cannot be routed to any queue. In other words, when a message arrives at an exchange, and there are no queues bound to that exchange with a routing key that matches the message, RabbitMQ will route the message to the alternate exchange, if one is specified.
+
+![Alternate Exchanges](images/image-9.png)
+
+## Dead Letter Exchange
+
+A Dead Letter Exchange (DLX) is a feature in RabbitMQ that allows you to specify an exchange where messages are sent when they cannot be routed to any queue or when they are rejected by a queue. DLX is commonly used to handle messages that, for various reasons, cannot be processed in the normal flow of your messaging system.
+
+![Dead Letter Exchange](images/image-10.png)
+
+**DLX is primarily for error handling, retries, and capturing problematic messages in dedicated dead-letter queues. AE, on the other hand, is more versatile in routing undeliverable messages to different destinations based on routing rules, making it suitable for various scenarios beyond just error handling.**
+
+## Message Acknowledgements
+
+![Alt text](images/image-11.png)
+
+When *auto_ack* is set to True, it means that RabbitMQ will automatically acknowledge (ack) the message as soon as it is delivered to the consumer. The consumer doesn't need to manually acknowledge the message.
+This can be convenient but may not be suitable for scenarios where you need more control over acknowledgment (e.g., after successful processing).
+
+*basic_ack* is a method used by a consumer to acknowledge a message explicitly.
+It's used when auto_ack is set to False, and the consumer wants to confirm that it has successfully processed and handled the message.
+By acknowledging a message, the consumer informs RabbitMQ that it can remove the message from the queue.
+
+*basic_reject* is a method used by a consumer to reject and return a message to the queue.
+It's often used when a message cannot be processed successfully and should be placed back in the queue for reprocessing or for handling by another consumer.
+basic_reject allows specifying whether the message should be **requeued** or not.
+
+*basic_nack* is similar to basic_reject but provides more advanced features.
+It allows rejecting multiple messages at once and specifying whether to requeue them.
+basic_nack is useful when you need to reject multiple messages in a batch or have more fine-grained control over requeuing behavior.
+
+---
+
+**multiple** is a parameter used with basic_ack and basic_nack methods.
+When multiple is set to True, it means that not just one but multiple messages up to and including the specified delivery_tag will be acknowledged or rejected.
+This is useful when you want to acknowledge or reject multiple messages in a batch.
+
+**delivery_tag** is a unique identifier assigned by RabbitMQ to each message delivered to a consumer.
+It's used when acknowledging or rejecting a message to specify which message is being acted upon.
+When acknowledging or rejecting a message, you reference it by its delivery_tag
+
+**requeue** is a parameter used with basic_reject and basic_nack methods.
+When requeue is set to True, it means that the rejected message(s) should be placed back in the queue for reprocessing.
+If requeue is set to False, the message(s) will be discarded.
+
+## Options for Controlling queues
+
+- auto delete [delete queue when no longer required]
+The "**auto delete**" attribute is a property that can be assigned to an exchange or a queue. It determines whether the exchange or queue should be automatically deleted by RabbitMQ when it is no longer in use.
+
+When a queue is marked as "auto-delete," RabbitMQ will automatically remove the queue from the server when it is no longer in use. This typically means that all consumers have canceled their subscriptions to the queue, and there are no more messages left in the queue.
+
+```py
+queue_name = 'auto_delete_queue'
+channel.queue_declare(queue=queue_name, auto_delete=True)
+```
+
+- auto expire [delete queue after period of unised time]
+**auto expire** for queues is a feature that allows you to specify a time limit (in milliseconds) for how long a queue should exist. Once this time limit is reached, RabbitMQ will automatically remove the queue from the server.
+
+Auto-expire is often used for temporary queues created for short-term purposes, such as request/response patterns, caching, or short-lived processing. It ensures that queues are automatically cleaned up when they are no longer needed.
+
+```py
+queue_args = {"x-expires": 3600000}  # 3600000 milliseconds = 1 hour
+channel.queue_declare(queue="my_queue", arguments=queue_args)
+```
+
+- auto expire msg [expire messages if they sit on a queue for a long time]
+**auto expire msg** are messages that have a time-to-live (TTL) set. Once a message sits in a queue for longer than its TTL, RabbitMQ will automatically remove it from the queue.
+
+This feature is handy for scenarios where you want to ensure that messages do not linger in a queue indefinitely. For example, in a chat application, you might set a TTL for messages to delete old messages after a certain time.
+
+- max length queue [set max number of messages allowed on queue]
+**auto expire msg** : a queue with a specified maximum length, meaning it can only hold a certain number of messages at a time. When the queue reaches its maximum length, new messages will be dropped or handled according to your defined policy (e.g., reject, publish to an alternate queue, etc.).
+
+Max-length queues are useful when you want to control the size of your queues to prevent them from growing too large and consuming excessive memory. For example, in a job processing system, you may want to limit the queue to hold only a certain number of pending jobs.
+
+- exclusive [only allows one consumer at a time]
+An exclusive queue or consumer is one that is accessible only by the connection that declared it. No other connections can access or use the same queue. Once the connection that declared the exclusive queue is closed, the queue is deleted automatically.
+
+Exclusive queues are often used when you want to ensure that only one consumer can process messages from a specific queue at a time. It's useful for scenarios like workload balancing or task assignment, where you want to avoid parallel processing.
+
+- durable [sets the queue to survive server restarts]
+A durable queue is one that survives server restarts. When a queue is marked as durable, RabbitMQ will make sure that the queue and its messages are persisted to disk, ensuring that they can be recovered even if the server restarts.
+
+Durable queues are crucial when you want to ensure that important messages are not lost in the event of a server crash or restart. For example, in a message broker used for critical financial transactions, you would want to make sure that no messages are lost due to server failures.
+
 # References
 
 - https://www.youtube.com/playlist?list=PLalrWAGybpB-UHbRDhFsBgXJM1g6T4IvO - jumpstartCS tutorial on RabbitMQ
