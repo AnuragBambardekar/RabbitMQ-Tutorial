@@ -32,8 +32,6 @@ RabbitMQ is an open-source message broker software that is widely used for build
 
 <u>**Language Support**</u>: RabbitMQ client libraries are available for various programming languages, including Java, Python, Ruby, .NET, and more, making it easy to integrate RabbitMQ into applications written in different languages.
 
-<u>**Community and Ecosystem**</u>: RabbitMQ has an active and supportive community. Additionally, it integrates well with various other technologies and frameworks, making it a popular choice for building distributed and decoupled systems.
-
 ## Analogies
 
 ### Email Servers Analogy:
