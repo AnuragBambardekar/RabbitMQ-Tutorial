@@ -190,6 +190,20 @@ The hash is more flexible than the asterisk because it can match multiple words,
 
 The request-response pattern in RabbitMQ, often referred to as RPC (Remote Procedure Call), is a communication pattern where one application (the client) sends a request to another application (the server) and waits for a response.
 
+**Applications:**
+
+- Web services: Clients make RPCs to remote web servers to fetch data or perform actions (e.g., RESTful APIs).
+- Database systems: Database clients use RPC to execute queries and transactions on a remote database server.
+
+**How RPC Works:**
+
+The client sends a request message to the 'request-queue' and waits for a response on its unique reply queue.
+
+The server, listening on the 'request-queue', processes incoming requests and sends a reply to the reply queue specified in the request message's reply_to property.
+
+When the server sends the reply, it includes the same correlation_id that was in the request, allowing the client to match the response to the correct request.
+
+The client, using the consumer on its reply queue, receives and processes the response message, and the result is printed.
 
 # References
 
